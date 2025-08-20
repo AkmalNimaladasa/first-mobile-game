@@ -57,7 +57,7 @@
   </style>
 </head>
 <body>
-  <div id="hud">Level: 1 | Time: 60 | Score: 0 | Lives: 3</div>
+  <div id="hud">Loading...</div>
   <canvas id="gameCanvas"></canvas>
 
   <!-- Mobile Controls -->
@@ -70,7 +70,6 @@
 
   <script src="game.js"></script>
   <script>
-    // Register service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js")
         .then(() => console.log("Service Worker registered"))
