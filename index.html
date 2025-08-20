@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Escape the Maze</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111111">
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      touch-action: none;
+    }
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-shadow: 0 0 5px black;
+      z-index: 10;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      z-index: 10;
+    }
+    .btn {
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid #777;
+      border-radius: 12px;
+      text-align: center;
+      line-height: 60px;
+      font-size: 24px;
+      color: white;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">Level: 1 | Time: 60 | Score: 0 | Lives: 3</div>
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Mobile Controls -->
+  <div id="controls">
+    <div class="btn" id="left">⬅</div>
+    <div class="btn" id="up">⬆</div>
+    <div class="btn" id="down">⬇</div>
+    <div class="btn" id="right">➡</div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    // Register service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW fail", err));
+    }
+  </script>
+</body>
+</html>
