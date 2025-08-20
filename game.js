@@ -1,18 +1,11 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-
-// Resize canvas to full screen
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 const hud = document.getElementById("hud");
 let keys = {};
 
-// Controls
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 document.getElementById("up").onclick = () => keys["ArrowUp"] = true;
@@ -20,12 +13,10 @@ document.getElementById("down").onclick = () => keys["ArrowDown"] = true;
 document.getElementById("left").onclick = () => keys["ArrowLeft"] = true;
 document.getElementById("right").onclick = () => keys["ArrowRight"] = true;
 
-// Game State
-let cellSize = 40;
-let rows = 10, cols = 14;
-let player, exit, maze;
+let rows = 12, cols = 16;
+let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
+let maze, player, exit;
 
-// Cell class
 class Cell {
   constructor(x, y) {
     this.x = x; this.y = y;
@@ -36,6 +27,7 @@ class Cell {
     const x = this.x * cellSize;
     const y = this.y * cellSize;
     ctx.strokeStyle = "#555";
+    ctx.lineWidth = 2;
     if (this.walls.top) drawLine(x, y, x + cellSize, y);
     if (this.walls.right) drawLine(x + cellSize, y, x + cellSize, y + cellSize);
     if (this.walls.bottom) drawLine(x, y + cellSize, x + cellSize, y + cellSize);
@@ -49,7 +41,6 @@ function drawLine(x1, y1, x2, y2) {
   ctx.stroke();
 }
 
-// Maze generation (DFS backtracking)
 function generateMaze() {
   maze = [];
   for (let y = 0; y < rows; y++) {
@@ -87,19 +78,24 @@ function removeWalls(a, b) {
   if (dy === -1) { a.walls.top = false; b.walls.bottom = false; }
 }
 
-// Player
 class Player {
   constructor() {
-    this.x = 0.5 * cellSize;
-    this.y = 0.5 * cellSize;
-    this.size = cellSize / 3;
+    this.x = cellSize/2;
+    this.y = cellSize/2;
+    this.size = cellSize/4;
     this.speed = 3;
   }
   move() {
-    if (keys["ArrowUp"]) this.y -= this.speed;
-    if (keys["ArrowDown"]) this.y += this.speed;
-    if (keys["ArrowLeft"]) this.x -= this.speed;
-    if (keys["ArrowRight"]) this.x += this.speed;
+    let newX = this.x, newY = this.y;
+    if (keys["ArrowUp"]) newY -= this.speed;
+    if (keys["ArrowDown"]) newY += this.speed;
+    if (keys["ArrowLeft"]) newX -= this.speed;
+    if (keys["ArrowRight"]) newX += this.speed;
+
+    if (!hitsWall(this.x, this.y, newX, newY)) {
+      this.x = newX;
+      this.y = newY;
+    }
   }
   draw() {
     ctx.beginPath();
@@ -109,11 +105,26 @@ class Player {
   }
 }
 
+function hitsWall(x, y, newX, newY) {
+  let col = Math.floor(x / cellSize), row = Math.floor(y / cellSize);
+  if (col < 0 || row < 0 || col >= cols || row >= rows) return true;
+  let cell = maze[row][col];
+
+  // inside cell → check wall collisions
+  if (newY < row*cellSize && cell.walls.top) return true;
+  if (newY > (row+1)*cellSize && cell.walls.bottom) return true;
+  if (newX < col*cellSize && cell.walls.left) return true;
+  if (newX > (col+1)*cellSize && cell.walls.right) return true;
+  return false;
+}
+
 function init() {
+  cellSize = Math.min(canvas.width / cols, canvas.height / rows);
   generateMaze();
   player = new Player();
   exit = {x: cols-0.5, y: rows-0.5};
 }
+
 function gameLoop() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -127,8 +138,7 @@ function gameLoop() {
   player.move();
   player.draw();
 
-  let dx = player.x - exit.x*cellSize;
-  let dy = player.y - exit.y*cellSize;
+  let dx = player.x - exit.x*cellSize, dy = player.y - exit.y*cellSize;
   if (Math.sqrt(dx*dx+dy*dy) < cellSize/2) {
     hud.innerText = "YOU ESCAPED 🎉";
   } else {
